@@ -1,13 +1,7 @@
-name: Build GoloPine DSP APK
+name: Build Pro DSP V3 APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: read
 
 jobs:
   build:
@@ -17,7 +11,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: Extract Project ZIP
+        run: |
+          unzip -o Pro_DSP_V3_BUILD_READY.zip -d project
+
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -28,24 +26,13 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Find and Extract ZIP
-        run: |
-          ZIP=$(find . -name "*.zip" | head -1)
-          echo "ZIP=$ZIP"
-          unzip -o "$ZIP" -d project
-
-      - name: Find Android Project
-        run: |
-          DIR=$(find project -name settings.gradle -printf '%h\n' | head -1)
-          echo "PROJECT=$DIR" >> $GITHUB_ENV
-
       - name: Build APK
         run: |
-          cd $PROJECT
-          gradle :app:assembleDebug --no-daemon
+          cd project
+          gradle :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GoloPine-DSP-7CH-APK
-          path: "**/app-debug.apk"
+          name: Pro-DSP-V3-APK
+          path: project/app/build/outputs/apk/debug/app-debug.apk
